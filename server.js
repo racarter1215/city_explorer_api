@@ -5,29 +5,27 @@ const PORT = process.env.PORT || 3000;
 const cors = require('cors');
 app.use(cors());
 
-app.get('/location', (request, response) => {
-    try {
-        let city = request.query.city;
-        console.log(city);
-        let geo = require('./data/geo.json');
-
-        let location = new Location(geo[0], city)
-        response.send(location);
-    }
-    catch(err) {
-        response.status(500).send(err)
-        console.error(err)
-    }
-})
-
-function City(obj, city) {
+function Location(geo, city) {
     this.search.query = city;
-    this.formatted_query = obj.display_name;
-    this.latitude = obj.lat;
-    this.longitude = obj.lon;
+    this.formatted_query = geo.display_name;
+    this.latitude = geo.lat;
+    this.longitude = geo.lon;
 }
 
-new City
+app.get('/location', (request, response) => {
+        // let city = request.query.city;
+        // console.log(city);
+    
+        let geo = require('./data/geo.json');
+        // console.log(geo);
+        let location = new Location(geo[0], 'city')
+        response.send(location);
+        if (location) {
+            response.status(200).send(location);
+        } else {
+            response.status(404).send('Cant find your city');
+        }
+    });
 
 app.listen(PORT, () => {
   console.log('Server is running on PORT: ' + PORT);
