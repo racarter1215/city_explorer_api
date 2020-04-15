@@ -3,17 +3,16 @@
 require('dotenv').config();
 
 const express = require('express');
-const app = express();
 const superagent = require('superagent');
-const PORT = process.env.PORT || 3000;
 const cors = require('cors');
+const app = express();
+const PORT = process.env.PORT || 3000;
 app.use(cors());
 
+
+
 app.get('/location', (request, response) => {
-    try {
-        let city = request.query.city;
-        // let geo = require('./data/geo.json');
-        // let location = new Location(geo[0], city)
+        const city = request.query.city;
         const key = process.env.GEOCODE_API_KEY;
         const url = `https://us1.locationiq.com/v1/search.php?key=${key}N&q=${city}&format=json`
 
@@ -26,14 +25,12 @@ app.get('/location', (request, response) => {
                         response.send(location);
                     }
                 }
-            });
-        
-        // response.send(location);
-    }
-    catch(err) {
-        response.status(500).send(err)
-    }
-})
+            })
+        .catch(error => {
+            handleError(error, response);
+        });
+});
+
 
 function Location(geo, city) {
     this.search_query = city;
@@ -56,9 +53,13 @@ function Weather(obj) {
     this.time = new Date(obj.time * 1000).toDateString();
 }
 
-app.get('*',(request, response) => {
-    response.status(404).send('Sorry, something is wrong');
-})
+function handleError(error, request, response) {
+    response.status(500).send({
+      status: 500,
+      responseText: "Sorry, something went wrong",
+    });
+  }
+
 
 app.listen(PORT, () => {
   console.log('Server is running on PORT: ' + PORT);
