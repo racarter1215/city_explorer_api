@@ -7,6 +7,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 const cors = require('cors');
+app.use(cors());
 
 app.get('/location', (request, response) => {
     try {
@@ -56,20 +57,21 @@ function Location(geo, city) {
 // });
 
 app.get('/weather', (request, response) => {
-    try {
-        let forecast = request.query.forecast;
-        let date = require('./data/darksky.json');
-        let weather = new Weather(date[0], forecast)
-        response.send(weather);
-    }
-    catch(err) {
-        response.status(500).send(err)
-    }
+    let city = request.query.search_query;
+    let formatted_query = request.query.formatted_query;
+    let latitude = request.query.latitude;
+    let longitude = request.query.longitude;
+    let weather = require('./data/darksky.json');
+    let weatherArray = weather.daily.data;
+    const finalWeatherArray = weatherArray.map(day => {
+        return new Weather(day);
+    })
+    response.send(finalWeatherArray);
 })
 
-function Weather(forecast, date) {
-    this.forecast = forecast;
-    this.date = new Date(date);
+function Weather(obj) {
+    this.forecast = obj.summary;
+    this.time = new Date(obj.time * 1000).toDateString();
 }
 
 // function handleWeather(request, response) {
@@ -86,12 +88,12 @@ app.get('*',(request, response) => {
     response.status(404).send('Sorry, something is wrong');
 })
 
-app.use(cors());
-app.get('/location', handleLocation);
-app.get('/weather', handleWeather);
-app.use((request, response) => {
-    handleError('You had an error', request, response);
-});
+
+// app.get('/location', handleLocation);
+// app.get('/weather', handleWeather);
+// app.use((request, response) => {
+//     handleError('You had an error', request, response);
+// });
 
 app.listen(PORT, () => {
   console.log('Server is running on PORT: ' + PORT);
