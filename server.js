@@ -14,8 +14,9 @@ app.use(cors());
 app.get('/location', (request, response) => {
         const city = request.query.city;
         const key = process.env.GEOCODE_API_KEY;
+        console.log('hi');
         const url = `https://us1.locationiq.com/v1/search.php?key=${key}&q=${city}&format=json`;
-
+        console.log('Hi');
         superagent.get(url) 
             .then(locationResponse => {
                 const data = locationResponse.body;
@@ -54,10 +55,7 @@ function Weather(obj) {
 }
 
 function handleError(error, request, response) {
-    response.status(500).send({
-      status: 500,
-      responseText: "Sorry, something went wrong",
-    });
+    response.status(500).send(error);
   }
 
 app.listen(PORT, () => {
