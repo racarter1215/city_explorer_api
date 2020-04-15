@@ -8,6 +8,17 @@ const PORT = process.env.PORT || 3000;
 
 const cors = require('cors');
 
+app.get('/location', (request, response) => {
+    try {
+        let city = request.query.city;
+        let geo = require('./data/geo.json');
+        let location = new Location(geo[0], city)
+        response.send(location);
+    }
+    catch(err) {
+        response.status(500).send(err)
+    }
+})
 
 function Location(geo, city) {
     this.search_query = city;
@@ -16,22 +27,22 @@ function Location(geo, city) {
     this.longitude = geo.lon;
 }
 
-function handleLocation(request, response) {
-    const locationData = require('./data/geo.json');
-    const results = [];
-    const cityQuery = request.query.city;
-    for (var i in locationData) {
-        if (locationData[i].display_name.search(cityQuery)) {
-            const location = new Location(cityQuery, locationData[i]);
-            response.send(location);
-            return;
-        }
-    }
-    locationData.forEach(item => {
-        results.push(new Location(item.geo, item.city));
-    })
-    response.send(results);
-}
+// function handleLocation(request, response) {
+//     const locationData = require('./data/geo.json');
+//     const results = [];
+//     const cityQuery = request.query.city;
+//     for (var i in locationData) {
+//         if (locationData[i].display_name.search(cityQuery)) {
+//             const location = new Location(cityQuery, locationData[i]);
+//             response.send(location);
+//             return;
+//         }
+//     }
+//     locationData.forEach(item => {
+//         results.push(new Location(item.geo, item.city));
+//     })
+//     response.send(results);
+// }
 
 // app.get('/location', (request, response) => {
 //     let city = request.query.city || 'Lynnwood';
@@ -44,27 +55,36 @@ function handleLocation(request, response) {
 //     } console.log(location);
 // });
 
-function Forecast(forecast, date) {
+app.get('/weather', (request, response) => {
+    try {
+        let forecast = request.query.forecast;
+        let date = require('./data/darksky.json');
+        let weather = new Weather(date[0], forecast)
+        response.send(weather);
+    }
+    catch(err) {
+        response.status(500).send(err)
+    }
+})
+
+function Weather(forecast, date) {
     this.forecast = forecast;
     this.date = new Date(date);
 }
 
-function handleWeather(request, response) {
-    const weatherData = require('./data/darksky.json').data;
+// function handleWeather(request, response) {
+//     const weatherData = require('./data/darksky.json').data;
 
-    const results = [];
-    weatherData.forEach(item => {
-        results.push(new Forecast(item.datetime, item.weather.description));
-    })
-    response.send(results);
-}
+//     const results = [];
+//     weatherData.forEach(item => {
+//         results.push(new Weather(item.datetime, item.weather.description));
+//     })
+//     response.send(results);
+// }
 
-function handleError(error, request, response) {
-    response.send(500).send({
-    status: 500,
-    responseText: "Sorry, something went wrong",
-    });
-}
+app.get('*',(request, response) => {
+    response.status(404).send('Sorry, something is wrong');
+})
 
 app.use(cors());
 app.get('/location', handleLocation);
