@@ -12,10 +12,10 @@
 **Version**: 1.0.0 (increment the patch/fix version number if you make more commits past your first submission)
 
 ## Overview
-<!-- Provide a high level overview of what this application is and why you are building it, beyond the fact that it's an assignment for this class. (i.e. What's your problem domain?) --> ok
+The purpose of this application is to provide a user with the ability to selecdt a city (Lynnwood) and get general information on it, as well as a weather report. Both are stored and accessed on a localhost server.
 
 ## Getting Started
-<!-- What are the steps that a user must take in order to build this app on their own machine and get it running? -->
+First thing you need to do is ensure that you have npm and nodemon installed on your computer. Once that is accomplished, you need the data you will be pulling from (JSON files).
 
 ## Architecture
 <!-- Provide a detailed description of the application design. What technologies (languages, libraries, etc) you're using, and any other relevant design information. -->
