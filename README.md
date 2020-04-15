@@ -26,5 +26,49 @@ First change was to get all json, gitignore, etc. (standardized) files and bring
 04-14-2001 10:30pm - Application now has a fully-functional express server, with a GET route for the location resource.
 
 ## Credits and Collaborations
-Teamed with Olga Charnysh. Collaborated with Joe Lee, Matthew Stewart, and Haley Griffin.
+Teamed with Olga Charnysh. Collaborated with Joe Lee, Matthew Stewart, and Haley Griffin Day 1
 -->
+
+Day 2:
+
+Number and name of feature: .map()
+
+Estimate of time needed to complete: 1 hour
+
+Start time: 9:30 am
+
+Finish time: 10:10 am
+
+Actual time needed to complete: 40 min
+
+Number and name of feature: location refactor
+
+Estimate of time needed to complete: 1 hour
+
+Start time: 10:10 am
+
+Finish time: 12:30 pm
+
+Actual time needed to complete: 2 hours 20 min
+
+
+Number and name of feature: weather refactor
+
+Estimate of time needed to complete: 1 hour
+
+Start time: 12:30 pm
+
+Finish time: 1:00 pm
+
+Actual time needed to complete: 30 min
+
+
+Number and name of feature: Trails
+
+Estimate of time needed to complete: 2 hours
+
+Start time: 1:00 pm
+
+Finish time: ongoing
+
+Actual time needed to complete: ongoing
