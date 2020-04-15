@@ -14,18 +14,18 @@ app.use(cors());
 app.get('/location', (request, response) => {
         const city = request.query.city;
         const key = process.env.GEOCODE_API_KEY;
-        console.log('hi');
+        // console.log('hi');
         const url = `https://us1.locationiq.com/v1/search.php?key=${key}&q=${city}&format=json`;
-        console.log('Hi');
+        // console.log('Hi');
         superagent.get(url) 
         // console.log('hi')
             .then(locationResponse => {
                 const data = locationResponse.body;
-                console.log('hi', data);
+                // console.log('hi', data);
                 for (var i in data) {
                     if (data[i].display_name[0].search(city)) {
                         const location = new Location(city, data[i]);
-                        console.log(location)
+                        // console.log(location)
                         response.send(location);
                         
                     }
@@ -44,17 +44,26 @@ function Location(city, geo) {
 }
 
 app.get('/weather', (request, response) => {
-    let weather = require('./data/darksky.json');
-    let weatherArray = weather.daily.data;
-    const finalWeatherArray = weatherArray.map(day => {
-        return new Weather(day);
-    })
-    response.send(finalWeatherArray);
-})
+    const { latitude, longitude} = request.query;
+    const key = process.env.WEATHER_API_KEY;
+    const url = `https://api.weatherbit.io/v2.0/forecast/daily?lat=${latitude}&lon=${longitude}&key=${key}`
+   
+    superagent.get(url) 
+        .then(weatherResponse => {
+            const data = weatherResponse.body.data;
+            const result = [];
+            data.forEach(item => {
+                result.push(new Weather(item.datetime, item.weather.description));
+            })
+            response.send(result);
+        }).catch(error => {
+        handleError(error, response);
+    });
+});
 
-function Weather(obj) {
-    this.forecast = obj.summary;
-    this.time = new Date(obj.time * 1000).toDateString();
+function Weather(date, forecast) {
+    this.forecast = forecast;
+    this.time = new Date(date).toDateString();
 }
 
 function handleError(error, response) {
