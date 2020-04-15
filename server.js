@@ -26,8 +26,8 @@ app.get('/location', (request, response) => {
                     }
                 }
             })
-            .catch(error => {
-                handleError(error, response);
+        .catch(error => {
+            handleError(error, response);
         });
 });
 
