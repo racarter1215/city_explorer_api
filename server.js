@@ -22,7 +22,7 @@ app.get('/location', (request, response) => {
                 const data = locationResponse.body;
                 for (var i in data) {
                     if (data[i].display_name.search(city)) {
-                        const location = new Location(geo[0], city);
+                        const location = new Location(data[i], city);
                         response.send(location);
                     }
                 }
