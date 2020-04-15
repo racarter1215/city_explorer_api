@@ -4,17 +4,31 @@ require('dotenv').config();
 
 const express = require('express');
 const app = express();
+const superagent = require('superagent');
 const PORT = process.env.PORT || 3000;
-
 const cors = require('cors');
 app.use(cors());
 
 app.get('/location', (request, response) => {
     try {
         let city = request.query.city;
-        let geo = require('./data/geo.json');
-        let location = new Location(geo[0], city)
-        response.send(location);
+        // let geo = require('./data/geo.json');
+        // let location = new Location(geo[0], city)
+        const key = process.env.GEOCODE_API_KEY;
+        const url = `https://us1.locationiq.com/v1/search.php?key=${key}N&q=${city}&format=json`
+
+        superagent.get(url) 
+            .then(locationResponse => {
+                const data = locationResponse.body;
+                for (var i in data) {
+                    if (data[i].display_name.search(city)) {
+                        const location = new Location(geo[0], city);
+                        response.send(location);
+                    }
+                }
+            });
+        
+        // response.send(location);
     }
     catch(err) {
         response.status(500).send(err)
@@ -29,10 +43,6 @@ function Location(geo, city) {
 }
 
 app.get('/weather', (request, response) => {
-    let city = request.query.search_query;
-    let formatted_query = request.query.formatted_query;
-    let latitude = request.query.latitude;
-    let longitude = request.query.longitude;
     let weather = require('./data/darksky.json');
     let weatherArray = weather.daily.data;
     const finalWeatherArray = weatherArray.map(day => {
