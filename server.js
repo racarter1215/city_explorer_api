@@ -26,8 +26,7 @@ app.get('/location', (request, response) => {
                         response.send(location);
                     }
                 }
-            })
-        .catch(error => {
+            }).catch(error => {
             handleError(error, response);
         });
 });
@@ -54,7 +53,7 @@ function Weather(obj) {
     this.time = new Date(obj.time * 1000).toDateString();
 }
 
-function handleError(error, request, response) {
+function handleError(error, response) {
     response.status(500).send(error);
   }
 
