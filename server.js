@@ -18,12 +18,16 @@ app.get('/location', (request, response) => {
         const url = `https://us1.locationiq.com/v1/search.php?key=${key}&q=${city}&format=json`;
         console.log('Hi');
         superagent.get(url) 
+        // console.log('hi')
             .then(locationResponse => {
                 const data = locationResponse.body;
+                console.log('hi', data);
                 for (var i in data) {
-                    if (data[i].display_name.search(city)) {
+                    if (data[i].display_name[0].search(city)) {
                         const location = new Location(city, data[i]);
+                        console.log(location)
                         response.send(location);
+                        
                     }
                 }
             }).catch(error => {
@@ -32,7 +36,7 @@ app.get('/location', (request, response) => {
 });
 
 
-function Location(geo, city) {
+function Location(city, geo) {
     this.search_query = city;
     this.formatted_query = geo.display_name;
     this.latitude = geo.lat;
