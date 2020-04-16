@@ -31,9 +31,9 @@ app.get('/location', (request, response) => {
 });
 
 app.get('/weather', (request, response) => {
-    const { latitude, longitude } = request.query;
+    const { latitude, longitude} = request.query;
     const key = process.env.WEATHER_API_KEY;
-    const url = `https://api.weatherbit.io/v2.0/forecast/daily?lat=${latitude}&lon=${longitude}&key=${key}`;
+    const url = `https://api.weatherbit.io/v2.0/forecast/daily?lat=${latitude}&lon=${longitude}&key=${key}`
    
     superagent.get(url) 
         .then(weatherResponse => {
@@ -44,9 +44,14 @@ app.get('/weather', (request, response) => {
             })
             response.send(result);
         }).catch(error => {
-        handleError(error, request, response);
+        handleError(error, response);
     });
 });
+
+function Weather(date, forecast) {
+    this.forecast = forecast;
+    this.time = new Date(date).toDateString();
+}
 
 app.get('/trails', (request, response) => {
     const { latitude, longitude} = request.query;
@@ -69,11 +74,6 @@ function Location(city, geo) {
     this.formatted_query = geo.display_name;
     this.latitude = geo.lat;
     this.longitude = geo.lon;
-}
-
-function Weather(data) {
-    this.forecast = data.weather.description;
-    this.time = new Date(date).toDateString();
 }
 
 function Trails(trail) {
