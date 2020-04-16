@@ -95,6 +95,8 @@ function handleError(error, request, response) {
     response.status(500).send({status: 500, responseText: 'Sorry something went wrong'});
   }
 
+app.use('*', (request, response) => response.send('Sorry that route does not exist'));
+
 app.listen(PORT, () => {
   console.log('Server is running on PORT: ' + PORT);
 });
