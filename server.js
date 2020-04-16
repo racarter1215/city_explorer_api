@@ -14,18 +14,13 @@ app.use(cors());
 app.get('/location', (request, response) => {
         const city = request.query.city;
         const key = process.env.GEOCODE_API_KEY;
-        // console.log('hi');
         const url = `https://us1.locationiq.com/v1/search.php?key=${key}&q=${city}&format=json`;
-        // console.log('Hi');
         superagent.get(url) 
-        // console.log('hi')
             .then(locationResponse => {
                 const data = locationResponse.body;
-                // console.log('hi', data);
                 for (var i in data) {
                     if (data[i].display_name[0].search(city)) {
                         const location = new Location(city, data[i]);
-                        // console.log(location)
                         response.send(location);
                         
                     }
@@ -34,14 +29,6 @@ app.get('/location', (request, response) => {
             handleError(error, response);
         });
 });
-
-
-function Location(city, geo) {
-    this.search_query = city;
-    this.formatted_query = geo.display_name;
-    this.latitude = geo.lat;
-    this.longitude = geo.lon;
-}
 
 app.get('/weather', (request, response) => {
     const { latitude, longitude} = request.query;
@@ -66,8 +53,44 @@ function Weather(date, forecast) {
     this.time = new Date(date).toDateString();
 }
 
-function handleError(error, response) {
-    response.status(500).send(error);
+app.get('/trails', (request, response) => {
+    const { latitude, longitude} = request.query;
+    const key = process.env.TRAIL_API_KEY;
+    const url = `https://www.hikingproject.com/data/get-trails?lat=${latitude}&lon=${longitude}&key=${key}`
+   
+    superagent.get(url) 
+        .then(trailResponse => {
+            const data = trailResponse.body.trails;
+            response.send(data.map(element => {
+                return new Trails(element);
+            }))
+        }).catch(error => {
+        handleError(error, response);
+    });
+});
+
+function Location(city, geo) {
+    this.search_query = city;
+    this.formatted_query = geo.display_name;
+    this.latitude = geo.lat;
+    this.longitude = geo.lon;
+}
+
+function Trails(trail) {
+    this.name = trail.name;
+    this.location = trail.location;
+    this.length = trail.length;
+    this.stars = trail.stars;
+    this.star_votes = trail.starVotes;
+    this.summary = trail.summary;
+    this.trail_url = trail.url;
+    this.conditions = trail.conditions;
+    this.condition_date = trail.conditionDate;
+    this.condition_time = trail.conditionTime;
+}
+
+function handleError(error, request, response) {
+    response.status(500).send({status: 500, responseText: 'Sorry something went wrong'});
   }
 
 app.listen(PORT, () => {
