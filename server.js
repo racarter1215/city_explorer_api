@@ -4,8 +4,10 @@ require('dotenv').config();
 
 const express = require('express');
 const superagent = require('superagent');
+const pg = require('pg');
 const cors = require('cors');
 const app = express();
+const dbClient = new pg.Client(process.env.DATABASE_URL);
 const PORT = process.env.PORT || 3000;
 app.use(cors());
 
@@ -44,7 +46,7 @@ app.get('/weather', (request, response) => {
             })
             response.send(result);
         }).catch(error => {
-        handleError(error, response);
+        handleError(error, request, response);
     });
 });
 
@@ -65,7 +67,7 @@ app.get('/trails', (request, response) => {
                 return new Trails(element);
             }))
         }).catch(error => {
-        handleError(error, response);
+        handleError(error, request, response);
     });
 });
 
