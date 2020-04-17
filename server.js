@@ -4,21 +4,36 @@ require('dotenv').config();
 
 const express = require('express');
 const superagent = require('superagent');
-// const pg = require('pg');
+const pg = require('pg');
 const cors = require('cors');
-const app = express();
-// const dbClient = new pg.Client(process.env.DATABASE_URL);
 const PORT = process.env.PORT || 3000;
+const app = express();
 app.use(cors());
-
-
 
 app.get('/location', (request, response) => {
         const city = request.query.city;
         const key = process.env.GEOCODE_API_KEY;
         const url = `https://us1.locationiq.com/v1/search.php?key=${key}&q=${city}&format=json`;
+       
+        let searchSQL = `SELECT * FROM locations WHERE search_query=$1;`;
+        let searchValues = [city];
+        let insertSQUL = `INSERT INTO locations (search_query, display_name, latitude, longitude) VALUES ($1, $2, $3, $4);`;
+       
+        dbClient.query(searchSQL, searchValues)
+            .then(sqlResults => {
+                if (squlResults.rows[0]){
+                response.send(sqlResults.rows[0])
+                 } else {
+
+                 }
+            })
+            .catch(sqlError => {
+                handleError(sqlError, request, response);
+            })
         superagent.get(url) 
             .then(locationResponse => {
+                let insertValues = results.body[0];
+                dbClient.query(insertSQL, insertValues)
                 const data = locationResponse.body;
                 for (var i in data) {
                     if (data[i].display_name[0].search(city)) {
@@ -28,7 +43,7 @@ app.get('/location', (request, response) => {
                     }
                 }
             }).catch(error => {
-            handleError(error, response);
+            handleError(error, request, response);
         });
 });
 
@@ -101,3 +116,11 @@ app.listen(PORT, () => {
   console.log('Server is running on PORT: ' + PORT);
 });
 
+const dbClient = new pg.Client(process.env.DATABASE_URL);
+dbCLlient.connect((error) => {
+    if (err) {
+        console.log(err);
+    } else {
+        app.listen(PORT);
+    }
+});
