@@ -4,33 +4,61 @@ require('dotenv').config();
 
 const express = require('express');
 const superagent = require('superagent');
-// const pg = require('pg');
+const pg = require('pg');
+const dbClient = new pg.Client(process.env.DATABASE_URL);
 const cors = require('cors');
-const app = express();
-// const dbClient = new pg.Client(process.env.DATABASE_URL);
 const PORT = process.env.PORT || 3000;
+const app = express();
 app.use(cors());
 
+dbClient.connect(error => {
+    if (error) {
+        console.error('connection to database error', error.stack)
+    } else {
+        console.log('connected to database')
+    }
+});
 
+        
 
-app.get('/location', (request, response) => {
+app.get('/location', searchLocation);
+
+function searchLocation (request, response) {
         const city = request.query.city;
         const key = process.env.GEOCODE_API_KEY;
         const url = `https://us1.locationiq.com/v1/search.php?key=${key}&q=${city}&format=json`;
-        superagent.get(url) 
-            .then(locationResponse => {
-                const data = locationResponse.body;
-                for (var i in data) {
-                    if (data[i].display_name[0].search(city)) {
-                        const location = new Location(city, data[i]);
-                        response.send(location);
-                        
-                    }
-                }
+        let sql = `SELECT * FROM locations WHERE search_query=$1;`;
+        let searchValues = [city];
+        let sqlInsert = `INSERT INTO locations (search_query, formatted_query, latitude, longitude) VALUES ($1, $2, $3, $4);`;
+        console.log('city', city);
+        dbClient.query(sql, searchValues)
+            .then(record => {
+                console.log('hello this is a promise', record);
+                if (!record.rows.length === 0) {
+                    // console.log(record.rows[0]);
+                    response.send(record.rows[0]);
+                } else {
+                    superangent.get(url)
+                    .then(locationResponse => {
+                        console.log(locationResponse);
+                        const geo = locationResponse.body[0];
+                        const location = new Location(city, geo);
+                        response.status(200).send(location);
+                        let searchValues = [city, location.formatted_query, location.latitude, location.longitude];
+
+                        dbClient.query(sqlInsert, searchValues).then(record => {
+                            //insert row
+                        }).catch(error => {
+                            console.log('database error');
+                            handleError(error, request, response);
+                        })
+                    })
+                };
             }).catch(error => {
-            handleError(error, response);
-        });
-});
+                console.log('query went wrong');
+                handleError(error, request, response);
+            });
+};
 
 app.get('/weather', (request, response) => {
     const { latitude, longitude} = request.query;
@@ -95,9 +123,10 @@ function handleError(error, request, response) {
     response.status(500).send({status: 500, responseText: 'Sorry something went wrong'});
   }
 
+
 app.use('/', (request, response) => response.send('Sorry that route does not exist'));
 
 app.listen(PORT, () => {
-  console.log('Server is running on PORT: ' + PORT);
+    console.log('Server is running on PORT: ' + PORT);
 });
 
