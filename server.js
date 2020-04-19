@@ -19,45 +19,40 @@ dbClient.connect(error => {
     }
 });
 
-        
-
-app.get('/location', searchLocation);
-
 function searchLocation (request, response) {
-        const city = request.query.city;
+        const cityQuery = request.query.city;
         const key = process.env.GEOCODE_API_KEY;
-        const url = `https://us1.locationiq.com/v1/search.php?key=${key}&q=${city}&format=json`;
+        const locationUrl = `https://us1.locationiq.com/v1/search.php?key=${key}&q=${cityQuery}&format=json`;
         let sql = `SELECT * FROM locations WHERE search_query=$1;`;
-        let searchValues = [city];
-        let sqlInsert = `INSERT INTO locations (search_query, formatted_query, latitude, longitude) VALUES ($1, $2, $3, $4);`;
-        console.log('city', city);
+        let searchValues = [cityQuery];
+        
         dbClient.query(sql, searchValues)
             .then(record => {
-                console.log('hello this is a promise', record);
-                if (!record.rows.length === 0) {
-                    // console.log(record.rows[0]);
-                    response.send(record.rows[0]);
+                // console.log('this is console logging record', record);
+                if (record.rows[0]) {
+                    console.log('this is console logging record.rows');
+                    response.status(200).send(record.rows[0]);
                 } else {
-                    superangent.get(url)
+                    // console.log('this is the beginning of the else statement');
+                    superagent.get(locationUrl)
                     .then(locationResponse => {
-                        console.log(locationResponse);
-                        const geo = locationResponse.body[0];
-                        const location = new Location(city, geo);
-                        response.status(200).send(location);
-                        let searchValues = [city, location.formatted_query, location.latitude, location.longitude];
-
-                        dbClient.query(sqlInsert, searchValues).then(record => {
-                            //insert row
-                        }).catch(error => {
-                            console.log('database error');
-                            handleError(error, request, response);
-                        })
-                    })
-                };
+                        // console.log('this is getting into the .then statement');
+                        // console.log(locationResponse.body);
+                        let location =  new Location(cityQuery, locationResponse.body[0]);
+                        let sqlInsert = `INSERT INTO locations (search_query, formatted_query, latitude, longitude) VALUES ($1, $2, $3, $4);`;
+                        let searchValues = [cityQuery, location.formatted_query, location.latitude, location.longitude];
+                        dbClient.query(sqlInsert, searchValues);
+                         response.status(200).send(location);
+                        
+                }).catch(error => {
+                    // console.log('error handler 1');
+                    handleError(error, request, response);
+                    });
+                }
             }).catch(error => {
-                console.log('query went wrong');
+                // console.log('error handler 2');
                 handleError(error, request, response);
-            });
+                })
 };
 
 app.get('/weather', (request, response) => {
@@ -100,6 +95,7 @@ app.get('/trails', (request, response) => {
 });
 
 function Location(city, geo) {
+    // console.log(geo);
     this.search_query = city;
     this.formatted_query = geo.display_name;
     this.latitude = geo.lat;
@@ -123,6 +119,7 @@ function handleError(error, request, response) {
     response.status(500).send({status: 500, responseText: 'Sorry something went wrong'});
   }
 
+app.get('/location', searchLocation);
 
 app.use('/', (request, response) => response.send('Sorry that route does not exist'));
 
