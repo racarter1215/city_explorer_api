@@ -28,16 +28,11 @@ function searchLocation (request, response) {
         
         dbClient.query(sql, searchValues)
             .then(record => {
-                // console.log('this is console logging record', record);
                 if (record.rows[0]) {
-                    console.log('this is console logging record.rows');
                     response.status(200).send(record.rows[0]);
                 } else {
-                    // console.log('this is the beginning of the else statement');
                     superagent.get(locationUrl)
                     .then(locationResponse => {
-                        // console.log('this is getting into the .then statement');
-                        // console.log(locationResponse.body);
                         let location =  new Location(cityQuery, locationResponse.body[0]);
                         let sqlInsert = `INSERT INTO locations (search_query, formatted_query, latitude, longitude) VALUES ($1, $2, $3, $4);`;
                         let searchValues = [cityQuery, location.formatted_query, location.latitude, location.longitude];
